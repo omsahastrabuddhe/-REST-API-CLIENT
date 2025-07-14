@@ -7,63 +7,53 @@ import org.json.JSONObject;
 
 public class Weather {
 
-    // Replace with your actual API key
-    private static final String API_KEY = "2a5f8c64c718741227fb7900b5ea4522";
-    private static final String CITY = "India";
+    private static final String API_KEY = "2a5f8c64c718741227fb7900b5ea4522"; // Replace with your key if needed
+    private static final String CITY = "Pune";
 
     public static void main(String[] args) {
         try {
-            // Build URL
-            String urlString = String.format(
+            // Build the API URL
+            String apiUrl = String.format(
                     "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=metric",
                     CITY, API_KEY);
-            URL url = new URL(urlString);
 
-            // Open connection
+            // Open HTTP connection
+            URL url = new URL(apiUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
 
+            // Get response code
             int responseCode = connection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                // Read response
-                BufferedReader in = new BufferedReader(
+                // Read data
+                BufferedReader reader = new BufferedReader(
                         new InputStreamReader(connection.getInputStream()));
-                String inputLine;
+                String line;
                 StringBuilder response = new StringBuilder();
 
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
                 }
-                in.close();
+                reader.close();
 
-                // Parse JSON
+                // Parse JSON response
                 JSONObject json = new JSONObject(response.toString());
+                String weather = json.getJSONArray("weather").getJSONObject(0).getString("description");
+                double temperature = json.getJSONObject("main").getDouble("temp");
+                int humidity = json.getJSONObject("main").getInt("humidity");
+                double windSpeed = json.getJSONObject("wind").getDouble("speed");
 
-                // Extract data
-                String weatherDescription = json
-                        .getJSONArray("weather")
-                        .getJSONObject(0)
-                        .getString("description");
-                double temp = json
-                        .getJSONObject("main")
-                        .getDouble("temp");
-                int humidity = json
-                        .getJSONObject("main")
-                        .getInt("humidity");
-                double windSpeed = json
-                        .getJSONObject("wind")
-                        .getDouble("speed");
-
-                // Display in structured format
-                System.out.println("=== Weather Data for " + CITY + " ===");
-                System.out.println("Description: " + weatherDescription);
-                System.out.println("Temperature: " + temp + "°C");
-                System.out.println("Humidity: " + humidity + "%");
+                // Output
+                System.out.println("====== Weather Info for " + CITY + " ======");
+                System.out.println("Weather: " + weather);
+                System.out.println("Temperature: " + temperature + " °C");
+                System.out.println("Humidity: " + humidity + " %");
                 System.out.println("Wind Speed: " + windSpeed + " m/s");
 
             } else {
-                System.out.println("GET request failed. Response Code: " + responseCode);
+                System.out.println("Error: HTTP " + responseCode);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
